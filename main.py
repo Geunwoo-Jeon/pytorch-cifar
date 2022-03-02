@@ -86,7 +86,7 @@ def test(epoch, net, testloader, device, criterion):
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-    parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+    parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--resume', '-r', action='store_true',
                         help='resume from checkpoint')
     args = parser.parse_args()
@@ -95,7 +95,7 @@ def main():
     global best_acc  # best test accuracy
     best_acc = 0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
-    epochs = 200  # how many epochs to train
+    epochs = 100  # how many epochs to train
 
     # Data
     print('==> Preparing data..')
@@ -126,8 +126,8 @@ def main():
 
     # Model
     print('==> Building model..')
-    net = VGG('VGG11')
-    # net = ResNet18()
+    # net = VGG('VGG51')
+    net = ResNet18()
     # net = PreActResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
@@ -181,7 +181,7 @@ def main():
     log_dict = {'train_loss': train_loss_log, 'train_acc': train_acc_log, 'test_loss': test_loss_log,
                 'test_acc': test_acc_log}
 
-    with open("log_SGD", "wb") as fp:
+    with open("Thanos-lr_1e-3", "wb") as fp:
         pickle.dump(log_dict, fp)
 
 

@@ -27,28 +27,34 @@ class Thanos(Optimizer):
                 state = self.state[p]
 
                 # State initialization
-                if len(self.state) == 0:
+                if len(state) == 0:
                     state['step'] = 0
+                    # state['lr_decay'] = torch.ones_like(p)
+                    # state['prev_sign'] = p.sign()
 
-                # state['step'] += 1
+                # lr_decay, prev_sign = state['lr_decay'], state['prev_sign']
+                state['step'] += 1
 
-                if p.data.dim() == 4:  # p is conv weight with shape (in_channels, out_channels, x, y)
+                if p.dim() == 4:  # p is conv weight with shape (in_channels, out_channels, x, y)
                     param_norm = p.data.norm(dim=[0, 1])
                     grad_norm = grad.norm(dim=[0, 1])
-                elif p.data.dim() == 2:  # p is linear weight with shape (in_channels, out_channels)
-                    param_norm = p.data.abs()
+                elif p.dim() == 2:  # p is linear weight with shape (in_channels, out_channels)
+                    param_norm = p.abs()
                     grad_norm = grad.abs()
-                elif p.data.dim() == 1:  # p is bias with shape (out_channels)
-                    param_norm = p.data.abs()
+                elif p.dim() == 1:  # p is bias with shape (out_channels)
+                    param_norm = p.abs()
                     grad_norm = grad.abs()
                 else:
                     param_norm = p.data.norm()
                     grad_norm = grad.norm()
 
-                param_norm = param_norm.clamp(max=1)
-                grad_norm = grad_norm.clamp(min=0.1)
+                grad_norm = grad_norm.clamp(min=1e-8)
+                param_norm = param_norm.clamp(min=1e-8)
 
-                delta = grad / grad_norm * param_norm
+                # sign_changed = prev_sign != p.sign()
+                # lr_decay = lr_decay * (1 - 0.01 * sign_changed)
+
+                delta = grad / grad_norm * param_norm  # * lr_decay
 
                 if group['weight_decay'] != 0:
                     delta.add_(p.data, alpha=group['weight_decay'])

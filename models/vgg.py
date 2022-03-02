@@ -2,20 +2,20 @@
 import torch
 import torch.nn as nn
 
-vgg101 = []
+vgg51 = []
 ch = [64, 128, 256, 512, 512]
-for i in range(100):
-    if (i+1) % 20 == 0:
-        vgg101.append('M')
+for i in range(25):
+    if (i+1) % 5 == 0:
+        vgg51.append('M')
     else:
-        vgg101.append(ch[(i + 1) // 20])
+        vgg51.append(ch[(i + 1) // 5])
 
 cfg = {
     'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
     'VGG13': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
     'VGG16': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
     'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
-    'VGG101': vgg101,
+    'VGG51': vgg51,
 }
 
 
@@ -39,7 +39,7 @@ class VGG(nn.Module):
                 layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
             else:
                 layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
-                           nn.BatchNorm2d(x),
+                           # nn.BatchNorm2d(x),
                            nn.ReLU(inplace=True)]
                 in_channels = x
         layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
