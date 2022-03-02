@@ -5,13 +5,13 @@ __all__ = ('Thanos',)
 
 
 class Thanos(Optimizer):
-    def __init__(self, params, lr: float = 1e-4, weight_decay: float = 0,):
+    def __init__(self, params, lr: float = 1e-4, weight_decay: float = 0, wait: int = 1):
         if lr <= 0.0:
             raise ValueError('Invalid learning rate: {}'.format(lr))
         if weight_decay < 0:
             raise ValueError('Invalid weight_decay value: {}'.format(weight_decay))
 
-        defaults = dict(lr=lr, weight_decay=weight_decay)
+        defaults = dict(lr=lr, weight_decay=weight_decay, wait=wait)
         super(Thanos, self).__init__(params, defaults)
 
     def step(self):
@@ -29,6 +29,8 @@ class Thanos(Optimizer):
                 # State initialization
                 if len(state) == 0:
                     state['step'] = 0
+                    if group['wait'] != 1:
+                        state['delta_sum'] = torch.zeros_like(p)
                     # state['lr_decay'] = torch.ones_like(p)
                     # state['prev_sign'] = p.sign()
 
@@ -59,6 +61,12 @@ class Thanos(Optimizer):
                 if group['weight_decay'] != 0:
                     delta.add_(p.data, alpha=group['weight_decay'])
 
-                p.data.add_(delta, alpha=-group['lr'])
+                if group['wait'] != 1:
+                    state['delta_sum'] += delta
+                    if state['step'] % group['wait'] == 0:
+                        p.data.add_(state['delta_sum'], alpha=-group['lr'])
+                        state['delta_sum'] *= 0
+                else:
+                    p.data.add_(delta, alpha=-group['lr'])
 
         return loss
